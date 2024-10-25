@@ -1,0 +1,48 @@
+<!--
+***********************************************************************************************
+damgau.msbuild.tasks.targets
+
+This file contains the implementation for 'nuget push'.
+
+***********************************************************************************************
+-->
+<Project>
+  
+  <PropertyGroup>
+    <MsgWS>%0a</MsgWS>
+    <MsgL>=============================================</MsgL>
+    <MsgLS>$(MsgWS)$(MsgL)</MsgLS>
+    <MsgLE>$(MsgL)$(MsgWS)</MsgLE>
+    <MsgT>|--------------------&gt; </MsgT>    
+  </PropertyGroup>
+  
+  <Target Name="damgauMsbuildTasksAfterBuild" AfterTargets="Build">
+    <Message Text="$(MsgLS)" Importance="high" />
+    <Message Text="$(MsgT)damgau.msbuild.tasks.Build" Importance="High" />
+    <Message Text="$(MsgLE)" Importance="high" />
+  </Target>
+
+  <Target Name="damgauMsbuildTasksNugetPush" AfterTargets="Publish" Condition="'$(NugetPush)' == 'True'">
+    <Message Text="$(MsgLS)" Importance="high" />
+    <Message Text="$(MsgT)damgau.msbuild.tasks.NugetPush..." Importance="high" />
+    <Message Text="$(MsgT)NugetPush: $(NugetPush)" Importance="high" />
+    
+    <PropertyGroup>
+      <FileToDeployPath>$([System.IO.Directory]::GetParent($(ProjectDir)$(OutDir).))</FileToDeployPath>
+      <FileToDeployName>$(PackageId).$(PackageVersion).nupkg</FileToDeployName>
+      <FileToDeploy>$(FileToDeployPath)\$(FileToDeployName)</FileToDeploy>
+      <NugetApiKeyPath>$([System.IO.Directory]::GetParent($(ProjectDir).))\GitHubApiKey.txt</NugetApiKeyPath>
+      <NugetApiKey>$([System.IO.File]::ReadAllText($(NugetApiKeyPath)))</NugetApiKey>
+    </PropertyGroup>
+
+    <Message Text="$(MsgT)FileToDeploy $(FileToDeploy)" Importance="high" />
+    <Message Text="$(MsgT)NugetApiKey $(NugetApiKey)" Importance="high" />
+    
+    <Exec  Command="dotnet nuget push $(FileToDeploy) --source github --api-key $(NugetApiKey)" EchoOff="true" />
+    <Message Text="$(MsgT)FileToDeploy $(FileToDeploy)" Importance="high" />
+    <Message Text="$(MsgT)Package $(FileToDeployName) deployed" Importance="high" />
+    <Message Text="$(MsgLE)" Importance="high" />
+    
+  </Target>
+  
+</Project>
