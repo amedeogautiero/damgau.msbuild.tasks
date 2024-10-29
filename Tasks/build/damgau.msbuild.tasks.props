@@ -1,0 +1,23 @@
+<Project>
+  <!-- See https://aka.ms/dotnet/msbuild/customize for more details on customizing your build -->
+  <PropertyGroup>
+    <MsgWS>%0a</MsgWS>
+    <MsgL>=============================================</MsgL>
+    <MsgLS>$(MsgWS)$(MsgL)</MsgLS>
+    <MsgLE>$(MsgL)$(MsgWS)</MsgLE>
+    <MsgT>|--------------------&gt; </MsgT>
+    <damgauMDBuildTasksTest>Test my property value</damgauMDBuildTasksTest>
+  </PropertyGroup>
+
+  <!--defining properties interesting for my task-->
+  <PropertyGroup>
+    <!--The folder where the custom task will be present. It points to inside the nuget package. -->
+    <_damgau_msbuild_tasks_TaskFolder>$(MSBuildThisFileDirectory)..\tasks\netstandard2.0</_damgau_msbuild_tasks_TaskFolder>
+    <_damgau_msbuild_tasks_NugetFolder>$(MSBuildThisFileDirectory)..\assets</_damgau_msbuild_tasks_NugetFolder>
+    <!--Reference to the assembly which contains the MSBuild Task-->
+    <_damgau_msbuild_tasks_AssemblyToRegister>$(_damgau_msbuild_tasks_TaskFolder)\$(MSBuildThisFileName).dll</_damgau_msbuild_tasks_AssemblyToRegister>
+  </PropertyGroup>
+
+  <!--Register our custom task-->
+  <UsingTask TaskName="damgau.msbuild.tasks.nuget.NugetPush" AssemblyFile="$(_damgau_msbuild_tasks_AssemblyToRegister)" />
+</Project>

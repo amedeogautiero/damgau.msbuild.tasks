@@ -15,7 +15,8 @@ This file contains the implementation for 'nuget push'.
     <MsgLE>$(MsgL)$(MsgWS)</MsgLE>
     <MsgT>|--------------------&gt; </MsgT>    
   </PropertyGroup>
-  
+
+
   <Target Name="damgauMsbuildTasksAfterBuild" AfterTargets="Build">
     <Message Text="$(MsgLS)" Importance="high" />
     <Message Text="$(MsgT)damgau.msbuild.tasks.Build" Importance="High" />
