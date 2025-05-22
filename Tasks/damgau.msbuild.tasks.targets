@@ -15,7 +15,8 @@ This file contains the implementation for 'nuget push'.
     <MsgLE>$(MsgL)$(MsgWS)</MsgLE>
     <MsgT>|--------------------&gt; </MsgT>    
   </PropertyGroup>
-  
+
+
   <Target Name="damgauMsbuildTasksAfterBuild" AfterTargets="Build">
     <Message Text="$(MsgLS)" Importance="high" />
     <Message Text="$(MsgT)damgau.msbuild.tasks.Build" Importance="High" />
@@ -33,12 +34,15 @@ This file contains the implementation for 'nuget push'.
       <FileToDeploy>$(FileToDeployPath)\$(FileToDeployName)</FileToDeploy>
       <NugetApiKeyPath>$([System.IO.Directory]::GetParent($(ProjectDir).))\GitHubApiKey.txt</NugetApiKeyPath>
       <NugetApiKey>$([System.IO.File]::ReadAllText($(NugetApiKeyPath)))</NugetApiKey>
+      <PushCommand>dotnet nuget push $(FileToDeploy) --source github --api-key $(NugetApiKey) --timeout 600</PushCommand>
     </PropertyGroup>
 
     <Message Text="$(MsgT)FileToDeploy $(FileToDeploy)" Importance="high" />
     <Message Text="$(MsgT)NugetApiKey $(NugetApiKey)" Importance="high" />
-    
+
+    <Message Text="Push command: $(PushCommand)" Importance="high" />
     <Exec  Command="dotnet nuget push $(FileToDeploy) --source github --api-key $(NugetApiKey)" EchoOff="true" />
+    
     <Message Text="$(MsgT)FileToDeploy $(FileToDeploy)" Importance="high" />
     <Message Text="$(MsgT)Package $(FileToDeployName) deployed" Importance="high" />
     <Message Text="$(MsgLE)" Importance="high" />

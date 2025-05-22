@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <!--<UsingTask TaskName="damgau.msbuild.tasks.nuget.NugetPush" AssemblyFile="C:\Users\amedeo.gautiero\.nuget\packages\damgau.msbuild.tasks\0.0.0.7-prerelease\tasks\netstandard2.0\damgau.msbuild.tasks.dll" />-->
+
+  <!--<UsingTask TaskName="damgau.msbuild.tasks.nuget.NugetPush"
+      AssemblyFile="$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\damgau.msbuild.tasks.dll"/>-->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <NugetPushApiKey>$([System.IO.File]::ReadAllText($(SolutionDir)GitHubApiKey.txt))</NugetPushApiKey>
+
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="damgau.msbuild.tasks" Version="0.0.0.36-prerelease">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!--<Target Name="testNugetPush" BeforeTargets="Build1">
+    <PropertyGroup>
+      
+    </PropertyGroup>
+    <Message Text="GeneratePackageOnBuild: $(GeneratePackageOnBuild)" Importance="high" />    
+  </Target>
+
+  <Target Name="SetOutputPaths" BeforeTargets="PrepareForBuild">
+    <Message Text="PrepareForBuild..." Importance="high" />
+  </Target>-->
+</Project>
