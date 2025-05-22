@@ -6,14 +6,19 @@
     <MsgLS>$(MsgWS)$(MsgL)</MsgLS>
     <MsgLE>$(MsgL)$(MsgWS)</MsgLE>
     <MsgT>|--------------------&gt; </MsgT>
-    <damgauMDBuildTasksTest>Test my property value</damgauMDBuildTasksTest>
+    <NugetPush>False</NugetPush>
+    <NugetPushApiKey>?</NugetPushApiKey>
+    <NugetPushSource>https://api.nuget.org/v3/index.json</NugetPushSource>
+    <NugetPushShowApiKey>False</NugetPushShowApiKey>
+    <NugetPushTool>nuget</NugetPushTool>
+    <NugetPushToolTimeout>300</NugetPushToolTimeout>
   </PropertyGroup>
 
   <!--defining properties interesting for my task-->
   <PropertyGroup>
     <!--The folder where the custom task will be present. It points to inside the nuget package. -->
     <_damgau_msbuild_tasks_TaskFolder>$(MSBuildThisFileDirectory)..\tasks\netstandard2.0</_damgau_msbuild_tasks_TaskFolder>
-    <_damgau_msbuild_tasks_NugetFolder>$(MSBuildThisFileDirectory)..\assets</_damgau_msbuild_tasks_NugetFolder>
+    <_damgau_msbuild_tasks_NugetPushWorkingDirectory>$(MSBuildThisFileDirectory)..\assets</_damgau_msbuild_tasks_NugetPushWorkingDirectory>
     <!--Reference to the assembly which contains the MSBuild Task-->
     <_damgau_msbuild_tasks_AssemblyToRegister>$(_damgau_msbuild_tasks_TaskFolder)\$(MSBuildThisFileName).dll</_damgau_msbuild_tasks_AssemblyToRegister>
   </PropertyGroup>

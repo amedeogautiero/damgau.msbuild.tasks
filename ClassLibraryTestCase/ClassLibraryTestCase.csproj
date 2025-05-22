@@ -9,14 +9,27 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <NugetPushApiKey>$([System.IO.File]::ReadAllText($(SolutionDir)GitHubApiKey.txt))</NugetPushApiKey>
+
   </PropertyGroup>
 
+
   <ItemGroup>
-    <PackageReference Include="damgau.msbuild.tasks" Version="0.0.0.10-prerelease" />
+    <PackageReference Include="damgau.msbuild.tasks" Version="0.0.0.36-prerelease">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
-  <!--<Target Name="testNugetPush" BeforeTargets="Build">
-    <Message Text="MSBuildThisFileDirectory: $(MSBuildThisFileDirectory)" Importance="high" />
-    <NugetPush Source="aaa" />
+  <!--<Target Name="testNugetPush" BeforeTargets="Build1">
+    <PropertyGroup>
+      
+    </PropertyGroup>
+    <Message Text="GeneratePackageOnBuild: $(GeneratePackageOnBuild)" Importance="high" />    
+  </Target>
+
+  <Target Name="SetOutputPaths" BeforeTargets="PrepareForBuild">
+    <Message Text="PrepareForBuild..." Importance="high" />
   </Target>-->
 </Project>

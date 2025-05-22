@@ -5,34 +5,209 @@
       <Message Text="Hello from CustomAfterBuildTarget" Importance="high" />
   </Target>
   -->
+
+  <UsingTask TaskName="NugetPushApiKeyTrim" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <ParameterGroup>
+      <A ParameterType="System.String" Required="true" />      
+      <B ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        B = (A + "     ").Substring(0, 5).Trim();
+
+        if (string.IsNullOrEmpty(B))
+        {
+          B = "[API Key is empty]";
+        }
+        else
+        {
+          B = "[" + B + "]";
+        }
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <UsingTask TaskName="NugetPushToolChoose" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <ParameterGroup>
+      <A ParameterType="System.String" Required="true" />
+      <B ParameterType="System.String" Output="true" />
+      <C ParameterType="System.String" Output="true" />
+      <D ParameterType="System.String" Output="true" />
+      <E ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        B = (A + "     ").Substring(0, 5).Trim();
+
+        if ((A+"").ToLower() == "dotnet")
+        {
+        B = "dotnet nuget push";
+        C = "--api-key";
+        D = "--source";
+        E = "--timeout";
+        }
+        else
+        {
+        B = "nuget.exe push";
+        C = "-ApiKey";
+        D = "-Source";
+        E = "-Timeout";
+        }
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <UsingTask TaskName="NugetPushPackageFullPath" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <ParameterGroup>
+      <ProjectDir ParameterType="System.String" Required="true" />
+      <PackageOutputPath ParameterType="System.String" Required="true" />
+      <PackageId ParameterType="System.String" Required="true" />
+      <PackageVersion ParameterType="System.String" Required="true" />
+      <PackageFullPath ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        string PackageName = PackageId + "."+ PackageVersion + ".nupkg";
+        string PackagePath = System.IO.Path.Combine(ProjectDir, PackageOutputPath, PackageName);
+        PackageFullPath = System.IO.Path.GetFullPath(PackagePath);
+      </Code>
+    </Task>
+  </UsingTask>
   
   <Target Name="damgauMsbuildTasksAfterBuild" AfterTargets="Build">
     <Message Text="$(MsgLS)" Importance="high" />
-    <Message Text="$(MsgT)damgau.msbuild.tasks.Build $(PackageId)" Importance="High" />
-    <Message Text="$(MsgT)damgauMDBuildTasksTest: $(damgauMDBuildTasksTest)"  Importance="high" />
-    <Message Text="$(MsgT)NugetFolder: $(_damgau_msbuild_tasks_NugetFolder)"  Importance="high" />
+    <Message Text="$(MsgT)damgau.msbuild.tasks.NugetPush OnBuild... $(PackageId)" Importance="High" />
+  
+    <NugetPushApiKeyTrim A="$(NugetPushApiKey)" >
+      <Output PropertyName="NugetPushApiKey5" TaskParameter="B" />
+    </NugetPushApiKeyTrim>
+    
+    <NugetPushToolChoose A="$(NugetPushTool)" >
+      <Output PropertyName="_damgau_msbuild_tasks_NugetPushTool" TaskParameter="B" />
+      <Output PropertyName="_damgau_msbuild_tasks_NugetPushToolApiKeyParam" TaskParameter="C" />
+      <Output PropertyName="_damgau_msbuild_tasks_NugetPushToolSourceParam" TaskParameter="D" />
+      <Output PropertyName="_damgau_msbuild_tasks_NugetPushToolTimeoutParam" TaskParameter="E" />
+    </NugetPushToolChoose>
+
+    <NugetPushPackageFullPath ProjectDir="$(ProjectDir)" PackageOutputPath="$(PackageOutputPath)" PackageId="$(PackageId)" PackageVersion="$(PackageVersion)">
+      <Output PropertyName="_damgau_msbuild_tasks_NugetPushPackageFullPath" TaskParameter="PackageFullPath" />
+    </NugetPushPackageFullPath>
+    
+    <!--
+    <Choose>
+      <When Condition=" '$(NugetPushTool)'=='nuget' ">
+        <PropertyGroup>
+          <_damgau_msbuild_tasks_NugetPushTool>nuget.exe push</_damgau_msbuild_tasks_NugetPushTool>
+        </PropertyGroup>
+      </When>
+      <Otherwise>
+        <PropertyGroup>
+          <_damgau_msbuild_tasks_NugetPushTool>dotnet nuget push</_damgau_msbuild_tasks_NugetPushTool>
+        </PropertyGroup>
+      </Otherwise>
+    </Choose>-->
+    
+    <PropertyGroup>
+      <_damgau_msbuild_tasks_NugetPushFileToDeployName>$(PackageId).$(PackageVersion).nupkg</_damgau_msbuild_tasks_NugetPushFileToDeployName>
+      <!--<_damgau_msbuild_tasks_NugetPushFileToDeployRelative>$(ProjectDir)$(PackageOutputPath)$(_damgau_msbuild_tasks_NugetPushFileToDeployName)</_damgau_msbuild_tasks_NugetPushFileToDeployRelative>-->
+      <!--<_damgau_msbuild_tasks_NugetPushFileToDeploy>$([System.IO.Path]::GetFullPath($(_damgau_msbuild_tasks_NugetPushFileToDeployRelative)))</_damgau_msbuild_tasks_NugetPushFileToDeploy>-->
+      <_damgau_msbuild_tasks_NugetPushFileToDeploy>$(_damgau_msbuild_tasks_NugetPushPackageFullPath)</_damgau_msbuild_tasks_NugetPushFileToDeploy>
+      <_damgau_msbuild_tasks_NugetPushWorkingDirectory>$([System.IO.Path]::GetFullPath($(_damgau_msbuild_tasks_NugetPushWorkingDirectory)))</_damgau_msbuild_tasks_NugetPushWorkingDirectory>
+      <!--<_damgau_msbuild_tasks_NugetPushApiKeyTemp>*****</_damgau_msbuild_tasks_NugetPushApiKeyTemp>-->
+      <!--<_damgau_msbuild_tasks_NugetPushCommand>nuget.exe push &quot;$(_damgau_msbuild_tasks_NugetPushFileToDeploy)&quot; -Source $(NugetPushSource) -ApiKey $(_damgau_msbuild_tasks_NugetPushApiKeyTemp)</_damgau_msbuild_tasks_NugetPushCommand>-->
+      <!--<_damgau_msbuild_tasks_NugetPushCommand> nuget.exe push &quot;$(_damgau_msbuild_tasks_NugetPushFileToDeploy)&quot; -Source $(NugetPushSource) -ApiKey $(NugetPushApiKey) </_damgau_msbuild_tasks_NugetPushCommand>-->
+      <!--<_damgau_msbuild_tasks_NugetPushCommand5>nuget.exe push &quot;$(_damgau_msbuild_tasks_NugetPushFileToDeploy)&quot; -Source $(NugetPushSource) -ApiKey $(NugetPushApiKey5)</_damgau_msbuild_tasks_NugetPushCommand5>-->
+      <_damgau_msbuild_tasks_NugetPushCommand> $(_damgau_msbuild_tasks_NugetPushTool) &quot;$(_damgau_msbuild_tasks_NugetPushFileToDeploy)&quot; $(_damgau_msbuild_tasks_NugetPushToolSourceParam) $(NugetPushSource) $(_damgau_msbuild_tasks_NugetPushToolApiKeyParam) $(NugetPushApiKey) $(_damgau_msbuild_tasks_NugetPushToolTimeoutParam) $(NugetPushToolTimeout)</_damgau_msbuild_tasks_NugetPushCommand>
+      <_damgau_msbuild_tasks_NugetPushCommand5>$(_damgau_msbuild_tasks_NugetPushTool) &quot;$(_damgau_msbuild_tasks_NugetPushFileToDeploy)&quot; $(_damgau_msbuild_tasks_NugetPushToolSourceParam) $(NugetPushSource) $(_damgau_msbuild_tasks_NugetPushToolApiKeyParam) $(NugetPushApiKey5) $(_damgau_msbuild_tasks_NugetPushToolTimeoutParam) $(NugetPushToolTimeout)</_damgau_msbuild_tasks_NugetPushCommand5>
+    </PropertyGroup>    
+    <Message Text="$(MsgT)NugetPush: $(NugetPush)" Importance="high" />
+    <Message Text="$(MsgT)GeneratePackageOnBuild: $(GeneratePackageOnBuild)" Importance="high" />
+    <Message Text="$(MsgT)NugetPushTool: $(NugetPushTool)" Importance="high" />
+    <Message Text="$(MsgT)NugetPushSource: $(_damgau_msbuild_tasks_NugetPushToolSourceParam) = $(NugetPushSource)" Importance="high" />
+    <Message Text="$(MsgT)NugetPushApiKey: $(NugetPushApiKey)" Importance="high"  Condition="'$(NugetPushShowApiKey)' == 'True'"/>
+    <Message Text="$(MsgT)NugetPushApiKey: $(NugetPushApiKey5)" Importance="high" Condition="'$(NugetPushShowApiKey)' != 'True'"/>
+    <Message Text="$(MsgT)NugetPushToolTimeout: $(NugetPushToolTimeout) seconds" Importance="high" />
+    <Message Text="$(MsgT)NugetPushWorkingDirectory: $(_damgau_msbuild_tasks_NugetPushWorkingDirectory)" Importance="high" />
+    <Message Text="$(MsgT)NugetPushCommand: $(_damgau_msbuild_tasks_NugetPushCommand5)"  Importance="high" />
+
+    <Message Text="$(MsgT)PublishDir: $(PublishDir)" Importance="high" />
+    <Message Text="$(MsgT)PackageOutputPath: $(PackageOutputPath)" Importance="high" />
+    <PropertyGroup>
+      <!--<_damgau_msbuild_tasks_NugetPushCommand> nuget.exe push &quot;$(_damgau_msbuild_tasks_NugetPushFileToDeploy)&quot; -Source $(NugetPushSource) -ApiKey $(NugetPushApiKey) </_damgau_msbuild_tasks_NugetPushCommand>-->
+      <!--<_damgau_msbuild_tasks_NugetPushCommand5>nuget.exe push &quot;$(_damgau_msbuild_tasks_NugetPushFileToDeploy)&quot; -Source $(NugetPushSource) -ApiKey $(NugetPushApiKey5)</_damgau_msbuild_tasks_NugetPushCommand5>-->
+    </PropertyGroup>
+    
     <Message Text="$(MsgLE)" Importance="high" />
   </Target>
 
-  <Target Name="damgauMsbuildTasksNugetPush" AfterTargets="Publish" Condition="'$(NugetPush)' == 'True'">
-    <Message Text="$(MsgLS)" Importance="high" />
+  <Target Name="damgauMsbuildTasksNugetPushOnPublishNo" AfterTargets="Publish2" Condition="!('$(NugetPush)' == 'True' And '$(GeneratePackageOnBuild)'  == 'True')">
     <Message Text="$(MsgT)damgau.msbuild.tasks.NugetPush..." Importance="high" />
     <Message Text="$(MsgT)NugetPush: $(NugetPush)" Importance="high" />
-
-    <PropertyGroup>
-      <FileToDeployPath>$([System.IO.Directory]::GetParent($(ProjectDir)$(OutDir).))</FileToDeployPath>
-      <FileToDeployName>$(PackageId).$(PackageVersion).nupkg</FileToDeployName>
-      <FileToDeploy>$(FileToDeployPath)\$(FileToDeployName)</FileToDeploy>
-      <NugetApiKeyPath>$([System.IO.Directory]::GetParent($(ProjectDir).))\GitHubApiKey.txt</NugetApiKeyPath>
-      <NugetApiKey>$([System.IO.File]::ReadAllText($(NugetApiKeyPath)))</NugetApiKey>
-    </PropertyGroup>
-
-    <Message Text="$(MsgT)FileToDeploy $(FileToDeploy)" Importance="high" />
-    <Message Text="$(MsgT)NugetApiKey $(NugetApiKey)" Importance="high" />
-
-    <Exec  Command="dotnet nuget push $(FileToDeploy) --source github --api-key $(NugetApiKey)" EchoOff="true" />
-    <Message Text="$(MsgT)FileToDeploy $(FileToDeploy)" Importance="high" />
-    <Message Text="$(MsgT)Package $(FileToDeployName) deployed" Importance="high" />
+    <Message Text="$(MsgT)GeneratePackageOnBuild: $(GeneratePackageOnBuild)" Importance="high" />
+    <Message Text="$(MsgT)Package $(_damgau_msbuild_tasks_NugetPushFileToDeployName) skipped" Importance="high" />
     <Message Text="$(MsgLE)" Importance="high" />
   </Target>
+
+  <Target Name="damgauMsbuildTasksNugetPushOnPublishYes" AfterTargets="Publish2" Condition="'$(NugetPush)' == 'True' And '$(GeneratePackageOnBuild)'  == 'True'">
+    <Message Text="$(MsgLS)" Importance="high" />
+    <Message Text="$(MsgT)damgau.msbuild.tasks.NugetPush..." Importance="high" />
+    <Message Text="$(MsgT)PackageToPush $(_damgau_msbuild_tasks_NugetPushFileToDeploy)" Importance="high" />    
+
+    <PropertyGroup>
+      <_damgau_msbuild_tasks_NugetPushFileToDeployName>$(PackageId).$(PackageVersion).nupkg</_damgau_msbuild_tasks_NugetPushFileToDeployName>
+      <_damgau_msbuild_tasks_NugetPushFileToDeploy>$(ProjectDir)$(PackageOutputPath)$(_damgau_msbuild_tasks_NugetPushFileToDeployName)</_damgau_msbuild_tasks_NugetPushFileToDeploy>
+      <_damgau_msbuild_tasks_NugetPushWorkingDirectory>$([System.IO.Path]::GetFullPath($(_damgau_msbuild_tasks_NugetPushWorkingDirectory)))</_damgau_msbuild_tasks_NugetPushWorkingDirectory>
+      <_damgau_msbuild_tasks_NugetPushApiKeyTemp>*****</_damgau_msbuild_tasks_NugetPushApiKeyTemp>
+      <_damgau_msbuild_tasks_NugetPushCommand>nuget.exe push &quot;$(_damgau_msbuild_tasks_NugetPushFileToDeploy)&quot; -Source $(NugetPushSource) -ApiKey $(_damgau_msbuild_tasks_NugetPushApiKeyTemp)</_damgau_msbuild_tasks_NugetPushCommand>
+    </PropertyGroup>
+    <Message Text="$(MsgT)NugetPushCommand: $(_damgau_msbuild_tasks_NugetPushCommand)"  Importance="high" />
+
+    <Exec WorkingDirectory="$(_damgau_msbuild_tasks_NugetPushWorkingDirectory)" Command="$(_damgau_msbuild_tasks_NugetPushCommand)" EchoOff="true" />
+    <Message Text="$(MsgT)Package $(_damgau_msbuild_tasks_NugetPushFileToDeployName) deployed" Importance="high" />
+    <Message Text="$(MsgLE)" Importance="high" />
+  </Target>
+
+  <Target Name="damgauMsbuildTasksNugetPushOnPublish" AfterTargets="Publish" >
+    <Message Text="$(MsgLS)" Importance="high" />
+    <Message Text="$(MsgT)damgau.msbuild.tasks.NugetPush OnPublish... $(PackageId)" Importance="high" />
+    <Message Text="$(MsgT)PackageToPush: $(_damgau_msbuild_tasks_NugetPushFileToDeploy)" Importance="high" />
+    <!--<Message Text="$(MsgT)NugetPush: $(NugetPush)" Importance="high" />-->
+    <!--<Message Text="$(MsgT)GeneratePackageOnBuild: $(GeneratePackageOnBuild)" Importance="high" />-->
+
+    <PropertyGroup>
+      
+      <!--<_damgau_msbuild_tasks_NugetPushFileToDeployName>$(PackageId).$(PackageVersion).nupkg</_damgau_msbuild_tasks_NugetPushFileToDeployName>
+      <_damgau_msbuild_tasks_NugetPushFileToDeploy>$(ProjectDir)$(PackageOutputPath)$(_damgau_msbuild_tasks_NugetPushFileToDeployName)</_damgau_msbuild_tasks_NugetPushFileToDeploy>
+      <_damgau_msbuild_tasks_NugetPushWorkingDirectory>$([System.IO.Path]::GetFullPath($(_damgau_msbuild_tasks_NugetPushWorkingDirectory)))</_damgau_msbuild_tasks_NugetPushWorkingDirectory>-->
+      
+      
+      <!--<_damgau_msbuild_tasks_NugetPushApiKeyTemp>*****</_damgau_msbuild_tasks_NugetPushApiKeyTemp>-->
+      <!--<_damgau_msbuild_tasks_NugetPushCommand>nuget.exe push &quot;$(_damgau_msbuild_tasks_NugetPushFileToDeploy)&quot; -Source $(NugetPushSource) -ApiKey $(_damgau_msbuild_tasks_NugetPushApiKeyTemp)</_damgau_msbuild_tasks_NugetPushCommand>-->
+    </PropertyGroup>
+    <!--<NugetPushApiKeyTrim A="$(_damgau_msbuild_tasks_NugetPushApiKeyTemp)" >
+      <Output PropertyName="NugetPushApiKey5" TaskParameter="B" />
+    </NugetPushApiKeyTrim>-->
+    
+    <PropertyGroup>
+      <!--<_damgau_msbuild_tasks_NugetPushApiKeyTemp>$(NugetPushApiKey)</_damgau_msbuild_tasks_NugetPushApiKeyTemp>-->
+      <!--<_damgau_msbuild_tasks_NugetPushCommand>nuget.exe push &quot;$(_damgau_msbuild_tasks_NugetPushFileToDeploy)&quot; -Source $(NugetPushSource) -ApiKey $(_damgau_msbuild_tasks_NugetPushApiKeyTemp)</_damgau_msbuild_tasks_NugetPushCommand>-->
+      <!--<_damgau_msbuild_tasks_NugetPushCommand> nuget.exe push &quot;$(_damgau_msbuild_tasks_NugetPushFileToDeploy)&quot; -Source $(NugetPushSource) -ApiKey $(NugetPushApiKey) </_damgau_msbuild_tasks_NugetPushCommand>-->
+      <!--<_damgau_msbuild_tasks_NugetPushCommand5>nuget.exe push &quot;$(_damgau_msbuild_tasks_NugetPushFileToDeploy)&quot; -Source $(NugetPushSource) -ApiKey $(NugetPushApiKey5)</_damgau_msbuild_tasks_NugetPushCommand5>-->
+    </PropertyGroup>
+    
+    <!--<Message Text="NugetPushApiKey5: $(NugetPushApiKey5)" Importance="High" />-->
+
+    <Message Text="$(MsgT)NugetPushSource: $(NugetPushSource)" Importance="high" />
+    <Message Text="$(MsgT)NugetPushApiKey: $(NugetPushApiKey)" Importance="high"  Condition="'$(NugetPushShowApiKey)' == 'True'"/>
+    <Message Text="$(MsgT)NugetPushApiKey: $(NugetPushApiKey5)" Importance="high" Condition="'$(NugetPushShowApiKey)' != 'True'"/>
+    <Message Text="$(MsgT)NugetPushCommand: $(_damgau_msbuild_tasks_NugetPushCommand)"  Importance="high" Condition="'$(NugetPushShowApiKey)' == 'True'"/>
+    <Message Text="$(MsgT)NugetPushCommand: $(_damgau_msbuild_tasks_NugetPushCommand5)" Importance="high" Condition="'$(NugetPushShowApiKey)' != 'True'"/>
+
+    <Exec WorkingDirectory="$(_damgau_msbuild_tasks_NugetPushWorkingDirectory)" Command="$(_damgau_msbuild_tasks_NugetPushCommand)" EchoOff="true" Condition="'$(NugetPush)' == 'True' And '$(GeneratePackageOnBuild)'  == 'True'" />
+    <Message Text="$(MsgT)Package $(_damgau_msbuild_tasks_NugetPushFileToDeployName) deployed" Importance="high" Condition="'$(NugetPush)' == 'True' And '$(GeneratePackageOnBuild)'  == 'True'"/>
+    <Message Text="$(MsgT)Package $(_damgau_msbuild_tasks_NugetPushFileToDeployName) skipped" Importance="high" Condition="!('$(NugetPush)' == 'True' And '$(GeneratePackageOnBuild)'  == 'True')"/>
+    <Message Text="$(MsgLE)" Importance="high" />
+  </Target>
+
+
 </Project>

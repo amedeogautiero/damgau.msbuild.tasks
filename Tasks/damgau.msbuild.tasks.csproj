@@ -8,10 +8,30 @@
     <Description>damgau.msbuild.tasks</Description>
     <PackageTags>msbuild automation</PackageTags>
     <Copyright>Copyright ©damgau 2024</Copyright>
-        
-    <AssemblyVersion>0.0.0.10</AssemblyVersion>
+    <developmentDependency>true</developmentDependency>
+    <AssemblyVersion>0.0.0.66</AssemblyVersion>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)-prerelease</Version>
+    <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/ReleaseNotes.txt"))</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- is needed to make sure that dependencies are copied to the output directory-->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <!-- This target will run when MSBuild is collecting the files to be packaged, and we'll implement it below. This property controls the dependency list for this packaging process, so by adding our custom property we hook ourselves into the process in a supported way. -->
+    <TargetsForTfmSpecificBuildOutput>
+      $(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage
+    </TargetsForTfmSpecificBuildOutput>
+    <!-- This property tells MSBuild where the root folder of the package's build assets should be. Because we are not a library package, we should not pack to 'lib'. Instead, we choose 'tasks' by convention. -->
+    <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
+    <!-- NuGet does validation that libraries in a package are exposed as dependencies, but we _explicitly_ do not want that behavior for MSBuild tasks. They are isolated by design. Therefore we ignore this specific warning. -->
+    <NoWarn>NU5100</NoWarn>
+    <!-- Suppress NuGet warning NU5128. -->
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+
+    <!-- Tell the SDK to generate a deps.json file -->
+    <GenerateDependencyFile>true</GenerateDependencyFile>
   </PropertyGroup>
 
   <PropertyGroup>

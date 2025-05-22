@@ -1,0 +1,5 @@
+﻿0.0.0.11-prerelease calcolo _damgau_msbuild_tasks_NugetFolder
+0.0.0.12-prerelease prova TemporaryFolderAbsolute
+0.0.0.13-prerelease prova NugetFolder3
+0.0.0.14-prerelease fix NugetFolder3
+0.0.0.36-prerelease developmentDependency true

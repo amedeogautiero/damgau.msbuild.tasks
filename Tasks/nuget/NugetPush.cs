@@ -26,11 +26,11 @@ namespace damgau.msbuild.tasks.nuget
             //var size = packageFile.Length;
             //var ps = new NuGet.PackageServer("https://nuget.pkg.github.com/amedeogautiero/index.json", "userAgent");
             //ps.PushPackage(ApiKey, package, size, 1800, false);
-
+            
             //string nugetRepositoryUrl = "https://nuget.pkg.github.com/amedeogautiero/index.json";
             //string nugetRepositoryUrl = "https://nuget.pkg.github.com";
             //string packagePath = "";
-            //string apiKey = ""; 
+            //string apiKey = "";
             //System.Threading.Tasks.Task.Run(async () =>
             //{
             //    await NugetPush.UploadPackage(nugetRepositoryUrl, packagePath, apiKey);
