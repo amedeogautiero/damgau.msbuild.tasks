@@ -11,12 +11,13 @@
     <developmentDependency>true</developmentDependency>
     
     <!--
-    <AssemblyVersion>0.0.0.66</AssemblyVersion>
+    <AssemblyVersion>0.0.0.67</AssemblyVersion>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)-prerelease</Version>
     -->
-    <VersionPrefix>0.0.0.67</VersionPrefix>
-    <VersionSuffix>-prerelease</VersionSuffix>
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <!--<VersionTS>test</VersionTS>-->
+    <VersionSuffix>-rc-</VersionSuffix>
     <!--<Version>=VersionPrefix + VersionSuffix (default)</Version>-->
     <!--<PackageVersion>=Version (default)</PackageVersion>-->
     <AssemblyVersion>$(Version)</AssemblyVersion>

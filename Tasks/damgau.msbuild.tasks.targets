@@ -7,6 +7,34 @@ This file contains the implementation for 'nuget push'.
 ***********************************************************************************************
 -->
 <Project>
+
+  <UsingTask TaskName="NugetPushPackageFullPath" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <ParameterGroup>
+      <ProjectDir ParameterType="System.String" Required="true" />
+      <PackageOutputPath ParameterType="System.String" Required="true" />
+      <PackageId ParameterType="System.String" Required="true" />
+      <PackageVersion ParameterType="System.String" Required="true" />
+      <PackageFullPath ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        string PackageName = PackageId + "."+ PackageVersion + ".nupkg";
+        string PackagePath = System.IO.Path.Combine(ProjectDir, PackageOutputPath, PackageName);
+        PackageFullPath = System.IO.Path.GetFullPath(PackagePath);
+      </Code>
+    </Task>
+  </UsingTask>
+  
+  <UsingTask TaskName="GetVersionTS" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <ParameterGroup>
+      <O1 ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        O1 = System.DateTime.Now.ToUniversalTime().Ticks.ToString();
+      </Code>
+    </Task>
+  </UsingTask>
   
   <PropertyGroup>
     <MsgWS>%0a</MsgWS>
@@ -16,22 +44,93 @@ This file contains the implementation for 'nuget push'.
     <MsgT>|--------------------&gt; </MsgT>    
   </PropertyGroup>
 
+  <Target Name="CopyPackage" AfterTargets="Pack">
+    <Message Text="$(MsgLS)" Importance="high" />
+    <Message Text="$(MsgT)damgau.msbuild.tasks.CopyPackage" Importance="High" />
+    
+    <Message Text="$(MsgT)$(OutputPath)" Importance="High" />
+    <Message Text="$(MsgT)$(PackageId)" Importance="High" />
+    <Message Text="$(MsgT)$(PackageVersion)" Importance="High" />
+    <Message Text="$(MsgLS)" Importance="high" />
+    <!--<Copy
+      SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg"
+      DestinationFolder="\\myshare\packageshare\"
+    />-->
+  </Target>
+  
+  <Target Name="damgauMsbuildTasksBeforeBuild" BeforeTargets="Compile;Build">
+    <Message Text="$(MsgLS)" Importance="high" />
+    <Message Text="$(MsgT)damgau.msbuild.tasks.Build(Before)" Importance="High" />
+    <Message Text="$(MsgT)VersionTS:$(VersionTS)" Importance="high" />
 
+    <Message Text="$(MsgT)PackageVersion1: $(PackageVersion)" Importance="high" />
+    <GetVersionTS>
+      <Output PropertyName="VersionTS" TaskParameter="O1" />
+    </GetVersionTS>
+    <Message Text="$(MsgT)PackageVersion2: $(PackageVersion)" Importance="high" />
+    <PropertyGroup>
+      <PackageVersion>$(VersionPrefix)$(VersionSuffix)$(VersionTS)</PackageVersion>
+    </PropertyGroup>
+    <Message Text="$(MsgT)PackageVersion3: $(PackageVersion)" Importance="high" />
+    
+    <Message Text="$(MsgLS)" Importance="high" />
+  </Target>
+  
   <Target Name="damgauMsbuildTasksAfterBuild" AfterTargets="Build">
     <Message Text="$(MsgLS)" Importance="high" />
-    <Message Text="$(MsgT)damgau.msbuild.tasks.Build" Importance="High" />
+    <Message Text="$(MsgT)damgau.msbuild.tasks.Build(After)" Importance="High" />
+
+    
+    <!--<PropertyGroup>
+      <VersionTS>$([System.DateTime.Now]::ToUniversalTime().Ticks)</VersionTS>      
+    </PropertyGroup>-->
+    <Message Text="$(MsgT)PackageVersion4: $(PackageVersion)" Importance="high" />
+    
+    <Message Text="$(MsgT)VersionTS:$(VersionTS)" Importance="high" />
     <Message Text="$(MsgLE)" Importance="high" />
+    
   </Target>
 
+  <Target Name="damgauMsbuildTasksBeforePublish" BeforeTargets="Publish">
+    <Message Text="$(MsgLS)" Importance="high" />
+    <Message Text="$(MsgT)damgau.msbuild.tasks.Publish(Before)" Importance="High" />
+    <Message Text="$(MsgT)VersionTS:$(VersionTS)" Importance="high" />
+    <!--<GetVersionTS>
+      <Output PropertyName="VersionTS" TaskParameter="O1" />
+    </GetVersionTS>-->
+    
+    <Message Text="$(MsgT)VersionPrefix: $(VersionPrefix)" Importance="high" />
+    <Message Text="$(MsgT)VersionTS: $(VersionTS)" Importance="high" />
+    <Message Text="$(MsgT)VersionSuffix: $(VersionSuffix)" Importance="high" />
+    <Message Text="$(MsgT)Version: $(Version)" Importance="high" />
+    <Message Text="$(MsgT)PackageVersion: $(PackageVersion)" Importance="high" />
+    <Message Text="$(MsgT)AssemblyVersion: $(AssemblyVersion)" Importance="high" />
+    <Message Text="$(MsgT)FileVersion: $(FileVersion)" Importance="high" />
+
+    <Message Text="$(MsgLS)" Importance="high" />
+  </Target>
+  
   <Target Name="damgauMsbuildTasksNugetPush" AfterTargets="Publish" Condition="'$(NugetPush)' == 'True'">
     <Message Text="$(MsgLS)" Importance="high" />
     <Message Text="$(MsgT)damgau.msbuild.tasks.NugetPush..." Importance="high" />
     <Message Text="$(MsgT)NugetPush: $(NugetPush)" Importance="high" />
     
+    <Message Text="$(MsgT)VersionPrefix: $(VersionPrefix)" Importance="high" />
+    <Message Text="$(MsgT)VersionTS: $(VersionTS)" Importance="high" />
+    <Message Text="$(MsgT)VersionSuffix: $(VersionSuffix)" Importance="high" />
+    <Message Text="$(MsgT)Version: $(Version)" Importance="high" />
+    <Message Text="$(MsgT)PackageVersion: $(PackageVersion)" Importance="high" />
+    <Message Text="$(MsgT)AssemblyVersion: $(AssemblyVersion)" Importance="high" />
+    <Message Text="$(MsgT)FileVersion: $(FileVersion)" Importance="high" />
+
+    <NugetPushPackageFullPath ProjectDir="$(ProjectDir)" PackageOutputPath="$(PackageOutputPath)" PackageId="$(PackageId)" PackageVersion="$(PackageVersion)">
+      <Output PropertyName="FileToDeploy" TaskParameter="PackageFullPath" />
+    </NugetPushPackageFullPath>
+    
     <PropertyGroup>
       <FileToDeployPath>$([System.IO.Directory]::GetParent($(ProjectDir)$(OutDir).))</FileToDeployPath>
       <FileToDeployName>$(PackageId).$(PackageVersion).nupkg</FileToDeployName>
-      <FileToDeploy>$(FileToDeployPath)\$(FileToDeployName)</FileToDeploy>
+      <!--<FileToDeploy>$(FileToDeployPath)\$(FileToDeployName)</FileToDeploy>-->
       <NugetApiKeyPath>$([System.IO.Directory]::GetParent($(ProjectDir).))\GitHubApiKey.txt</NugetApiKeyPath>
       <NugetApiKey>$([System.IO.File]::ReadAllText($(NugetApiKeyPath)))</NugetApiKey>
       <PushCommand>dotnet nuget push $(FileToDeploy) --source github --api-key $(NugetApiKey) --timeout 600</PushCommand>
